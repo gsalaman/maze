@@ -163,11 +163,67 @@ def show_maze():
      print room, x_corn, y_corn
       
 ###################################################
+# show_player
+#
+# If passed parameter is true, it shows the player in a given room.
+# If false, it erases the player from the given room.
+################################################## 
+def show_player(room, show):
+  if show:
+    player_color = (0,255,0)
+  else:
+    player_color = (0,0,0)
+
+  # We want our sprite for the player to be smaller than the room boundaries,
+  # so that we don't erase the walls we've drawn.  I'm gonna make it 2 smaller.
+  temp_image = Image.new("RGB", (room_size-2, room_size-2))
+  temp_draw = ImageDraw.Draw(temp_image)
+
+  # Start with a player being a circle.
+  # I'm gonna add a little more space here to give boundaries.
+  temp_draw.ellipse((2,2,room_size-4,room_size-4), outline=player_color, fill=player_color)
+  
+  # Note the +1s here...to offset the sprite so it's INSIDE the room rather than
+  # aligned with the boundary (which would erase the wall)
+  x_corn = 1+ (((room - 1) % 4) * room_size)
+  y_corn = 1+ (((room - 1) / 4) * room_size)
+  
+  matrix.SetImage(temp_image, x_corn, y_corn)
+  
+###################################################
+# show_target
+#
+# draws a blue x on the spot we're trying to reach
+################################################## 
+def show_target(room):
+
+  # We want our sprite for the target to be smaller than the room boundaries,
+  # so that we don't erase the walls we've drawn.  I'm gonna make it 2 smaller.
+  temp_image = Image.new("RGB", (room_size-2, room_size-2))
+  temp_draw = ImageDraw.Draw(temp_image)
+
+  # I'm gonna add a little more space here to give boundaries.
+  temp_draw.line((2,2,room_size-4,room_size-4), fill=(0,0,255))
+  temp_draw.line((2,room_size-4,room_size-4,2), fill=(0,0,255))
+  
+  # Note the +1s here...to offset the sprite so it's INSIDE the room rather than
+  # aligned with the boundary (which would erase the wall)
+  x_corn = 1+ (((room - 1) % 4) * room_size)
+  y_corn = 1+ (((room - 1) / 4) * room_size)
+  
+  matrix.SetImage(temp_image, x_corn, y_corn)
+  
+###################################################
 # Our main loop.  
 ################################################## 
 show_maze()
+show_target(dest_room)
+show_player(current_room, True)
 while current_room != dest_room:
   print_exits()
-  current_room = get_next_room(current_room)
+  next_room = get_next_room(current_room)
+  show_player(current_room, False)
+  show_player(next_room, True)
+  current_room = next_room
 print "Yay!  You won!" 
 
