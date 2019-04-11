@@ -4,6 +4,9 @@
 # 0 means no path that direction.
 # non-zero is the room id of the room for that direction.
 
+from rgbmatrix import RGBMatrix, RGBMatrixOptions
+from PIL import Image, ImageDraw
+
 maze = \
 { \
   1:[0,0,2,0], \
@@ -24,9 +27,67 @@ maze = \
   16:[12,0,0,0] \
 }
 
+########################################################
+# some globals.  Where do we start, and where are we going?
+#######################################################
 current_room = 1
 dest_room = 16
 
+########################################################
+# Display constants
+########################################################
+matrix_size = 64
+room_size = 16
+wall_color = (255,0,0)
+
+########################################################
+# Matrix configuration
+########################################################
+options = RGBMatrixOptions()
+options.rows = 64
+options.cols = 64 
+options.chain_length = 1
+options.parallel = 1
+options.hardware_mapping = 'adafruit-hat'  # If you have an Adafruit HAT: 'adafruit-hat'
+
+matrix = RGBMatrix(options = options)
+
+########################################################
+# show_room
+#
+# Displays a given room in our matrix.  
+########################################################
+def show_room(room, corner_x, corner_y):
+  
+  # I'm going to start by defining an image that is the size of a room.
+  # I'll then check the maze data to draw top, bottom, left, and right walls.
+  # Then I'll render the image to the proper corner.
+
+  temp_image = Image.new("RGB", (room_size, room_size))
+  temp_draw = ImageDraw.Draw(image)
+
+  # draw the walls
+  if maze[room][0]:
+    # north wall is on top
+    temp_draw.line((0,0,room_size-1,0), fill=wall_color)
+  if maze[room][1]:
+    # south wall is on bottom
+    temp_draw.line((0,room_size-1, room_size-1, room_size-1), fill=wall_color) 
+  if maze[room][2]:
+    #east wall is on right
+    temp_draw.line((room_size-1,0, room_size-1, room_size-1), fill=wall_color) 
+  if maze[room][3]:
+    # west wall is on left
+    temp_draw.line((0,0,0,room_size-1), fill=wall_color) 
+
+  # display our room at the right point.
+  matrix.SetImage(temp_image, corner_x, corner_y)
+
+########################################################
+# getch()
+#
+#   Get single character
+########################################################
 def getch():
   import sys, tty, termios
   old_settings = termios.tcgetattr(0)
@@ -39,6 +100,11 @@ def getch():
     termios.tcsetattr(0, termios.TCSANOW, old_settings)
   return ch 
   
+#######################################################
+# print_exits()
+#
+# Print out which ways you can go from the current room
+#######################################################
 def print_exits():
   print "current room: ", current_room
   print "exits:",
@@ -53,6 +119,15 @@ def print_exits():
   print
   print "n, s, e, or w"
 
+########################################################
+# get_next_room()
+#
+# takes a character as input.
+# looks into the maze array to confirm you can go that way.
+# if so, it'll set current room to the new room
+# if not, current room stays the same, and you get an error message.
+# also confirms input is a correct direction.
+######################################################## 
 def get_next_room(cur_room):
   dir_char = getch()
   if dir_char == 'n':
@@ -74,7 +149,22 @@ def get_next_room(cur_room):
   else:
     print "You can't go that way"
     return cur_room
-  
+
+###################################################
+# show_maze()
+#
+# Displays the whole maze...only called once.
+################################################### 
+def show_maze():
+  for room in maze.items():
+     x_corn = ((room - 1) % 4) * room_size
+     y_corn = ((room - 1) / 4) * room size
+     show_room(room, x_corn, y_corn)
+      
+###################################################
+# Our main loop.  
+################################################## 
+show_maze()
 while current_room != dest_room:
   print_exits()
   current_room = get_next_room(current_room)
