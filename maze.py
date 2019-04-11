@@ -64,19 +64,19 @@ def show_room(room, corner_x, corner_y):
   # Then I'll render the image to the proper corner.
 
   temp_image = Image.new("RGB", (room_size, room_size))
-  temp_draw = ImageDraw.Draw(image)
+  temp_draw = ImageDraw.Draw(temp_image)
 
   # draw the walls
-  if maze[room][0]:
+  if maze[room][0] == 0:
     # north wall is on top
     temp_draw.line((0,0,room_size-1,0), fill=wall_color)
-  if maze[room][1]:
+  if maze[room][1] == 0:
     # south wall is on bottom
     temp_draw.line((0,room_size-1, room_size-1, room_size-1), fill=wall_color) 
-  if maze[room][2]:
+  if maze[room][2] == 0:
     #east wall is on right
     temp_draw.line((room_size-1,0, room_size-1, room_size-1), fill=wall_color) 
-  if maze[room][3]:
+  if maze[room][3] == 0:
     # west wall is on left
     temp_draw.line((0,0,0,room_size-1), fill=wall_color) 
 
@@ -156,10 +156,11 @@ def get_next_room(cur_room):
 # Displays the whole maze...only called once.
 ################################################### 
 def show_maze():
-  for room in maze.items():
+  for room in maze.keys():
      x_corn = ((room - 1) % 4) * room_size
-     y_corn = ((room - 1) / 4) * room size
+     y_corn = ((room - 1) / 4) * room_size
      show_room(room, x_corn, y_corn)
+     print room, x_corn, y_corn
       
 ###################################################
 # Our main loop.  
